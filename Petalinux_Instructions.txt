@@ -1,0 +1,56 @@
+============================================================================================================
+                                            SETUP
+============================================================================================================
+1. Setup the Environment
+(Run this inside your PetaLinux installation folder so your terminal understands the tools)
+source settings.sh
+
+2. Navigate to the Workspace
+cd ~/Petalinux_HardData
+
+3. Create the Base Project
+(This creates the initial wrapper specifically for our MicroBlaze processor)
+petalinux-create --type project --template microblaze --name image_pipeline_os
+
+4. Import the Hardware Architecture
+(This points PetaLinux directly to the hardware we locked in on GitHub. When the blue configuration menu pops up, just hit <Save> and <Exit>)
+cd image_pipeline_os
+petalinux-config --get-hw-description={PATH TO HardwareSpec_V1.xsa}
+
+5. Disable U-Boot Networking
+Run the command petalinux-config -c u-boot. In the menu, navigate to "Networking → Networking Stack", 
+select "No networking support", and then exit.
+
+6. Configure Root Filesystem
+Run the command petalinux-config -c rootfs
+Inside the rootfs menu, go into "Filesystem Packages --> devel --> python3 --> python3" 
+and activate python 3 by pressing 'Y'. Then Exit out
+
+5. Build the OS
+petalinux-build
+
+============================================================================================================
+                                            TESTING
+============================================================================================================
+1. Connect to the board's serial port:
+Open a brand new Ubuntu terminal window (keep your Petalinux window open in the background).
+RUN: sudo minicom -D /dev/ttyUSB1 -b 115200
+
+2. Push the OS (JTAG)
+Go back to your original terminal window, and run this exact command:
+petalinux-boot --jtag --fpga --kernel
+
+3. Log into PetaLinux
+Once the boot sequence finishes in your minicom window, log in:
+- Username: petalinux
+- Password: (It will immediately prompt you to create a new password. Type something simple like 'root')
+
+4. Create the DMA Test Script
+Create a new Python file directly on the board using the vi text editor:
+RUN: vi test_dma.py
+Now copy and paste the test_dma.py file from our repo to the new file you just made
+Press 'Esc' and then type ':wq', and press Enter to save and exit the text editor. (TRUST ME)
+
+5. Run the Test
+RUN: sudo python3 test_dma.py
+If all goes well, you should get the inverse of the Color code in the test_dma.py file

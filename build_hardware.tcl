@@ -585,6 +585,8 @@ proc create_hier_cell_axi_perifs { parentCell nameHier } {
   [get_bd_pins ilconcat_0/In2]
   connect_bd_net -net axi_dma_0_s2mm_introut  [get_bd_pins axi_dma_0/s2mm_introut] \
   [get_bd_pins ilconcat_0/In3]
+  connect_bd_net -net axi_dma_0_s_axis_s2mm_tready  [get_bd_pins axi_dma_0/s_axis_s2mm_tready] \
+  [get_bd_pins image_filter_ip_0/pixel_out_tready]
   connect_bd_net -net axi_resetn_1  [get_bd_pins axi_resetn] \
   [get_bd_pins axi_dma_0/axi_resetn] \
   [get_bd_pins image_filter_ip_0/pixel_in_aresetn] \
@@ -598,6 +600,14 @@ proc create_hier_cell_axi_perifs { parentCell nameHier } {
   [get_bd_pins microblaze_0_axi_intc/intr]
   connect_bd_net -net image_filter_ip_0_pixel_in_tready  [get_bd_pins image_filter_ip_0/pixel_in_tready] \
   [get_bd_pins axi_dma_0/m_axis_mm2s_tready]
+  connect_bd_net -net image_filter_ip_0_pixel_out_tdata  [get_bd_pins image_filter_ip_0/pixel_out_tdata] \
+  [get_bd_pins axi_dma_0/s_axis_s2mm_tdata]
+  connect_bd_net -net image_filter_ip_0_pixel_out_tlast  [get_bd_pins image_filter_ip_0/pixel_out_tlast] \
+  [get_bd_pins axi_dma_0/s_axis_s2mm_tlast]
+  connect_bd_net -net image_filter_ip_0_pixel_out_tstrb  [get_bd_pins image_filter_ip_0/pixel_out_tstrb] \
+  [get_bd_pins axi_dma_0/s_axis_s2mm_tkeep]
+  connect_bd_net -net image_filter_ip_0_pixel_out_tvalid  [get_bd_pins image_filter_ip_0/pixel_out_tvalid] \
+  [get_bd_pins axi_dma_0/s_axis_s2mm_tvalid]
   connect_bd_net -net processor_rst_1  [get_bd_pins processor_rst] \
   [get_bd_pins microblaze_0_axi_intc/processor_rst]
   connect_bd_net -net rst_clk_wiz_0_100M_peripheral_aresetn  [get_bd_pins s_axi_aresetn] \
