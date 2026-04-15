@@ -41,21 +41,21 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 ################################################################
 
 # To test this script, run the following commands from Vivado Tcl console:
-# source P3_BD_S2026_script.tcl
+# source Build_Script.tcl
 
 # If there is no project opened, this script will create a
 # project, but make sure you do not have an existing project
-# <./myproj/project_1.xpr> in the current working folder.
+# <./SoC_Final/Image_Filter.xpr> in the current working folder.
 
 set list_projs [get_projects -quiet]
 if { $list_projs eq "" } {
-   create_project project_1 myproj -part xc7s50csga324-1
+   create_project Image_Filter SoC_Final -part xc7s50csga324-1
 }
 
 
 # CHANGE DESIGN NAME HERE
 variable design_name
-set design_name P3_BD_S2026
+set design_name Top
 
 # If you do not already have an existing IP Integrator design open,
 # you can create a design using the following command:

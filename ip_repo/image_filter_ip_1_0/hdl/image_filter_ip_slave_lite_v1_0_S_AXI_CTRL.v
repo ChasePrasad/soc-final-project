@@ -15,7 +15,7 @@
 	)
 	(
 		// Users to add ports here
-		output wire [31:0] filter_mode_out,
+		output wire [31:0] filter_mode,
 		// User ports ends
 		// Do not modify the ports beyond this line
 
@@ -302,7 +302,7 @@
 	// Implement memory mapped register select and read logic generation
 	  assign S_AXI_RDATA = (axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] == 2'h0) ? slv_reg0 : (axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] == 2'h1) ? slv_reg1 : (axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] == 2'h2) ? slv_reg2 : (axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] == 2'h3) ? slv_reg3 : 0; 
 	// Add user logic here
-	assign filter_mode_out = slv_reg0;
+	assign filter_mode = slv_reg0;
 	// User logic ends
 
 	endmodule
