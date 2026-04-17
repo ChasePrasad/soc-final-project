@@ -109,13 +109,11 @@ set_property -dict {PACKAGE_PIN V17 IOSTANDARD TMDS_33} [get_ports {hdmi_tx_0_0_
 #set_property -dict {PACKAGE_PIN T13 IOSTANDARD LVCMOS33} [get_ports {USB_INT}]
 
 ## SD socket signals
-set_property -dict {PACKAGE_PIN M16 IOSTANDARD LVCMOS33} [get_ports {SD_DQ0}]
-set_property -dict {PACKAGE_PIN M17 IOSTANDARD LVCMOS33} [get_ports {SD_DQ1}]
-set_property -dict {PACKAGE_PIN M18 IOSTANDARD LVCMOS33} [get_ports {SD_DQ2}]
-set_property -dict {PACKAGE_PIN N18 IOSTANDARD LVCMOS33} [get_ports {SD_DQ3}]
-set_property -dict {PACKAGE_PIN P17 IOSTANDARD LVCMOS33} [get_ports {SD_CMD}]
-set_property -dict {PACKAGE_PIN P18 IOSTANDARD LVCMOS33} [get_ports {SD_CLK}]
-set_property -dict {PACKAGE_PIN R18 IOSTANDARD LVCMOS33} [get_ports {SD_CD_N}]
+## SD socket signals (Native SPI Mode with Pull-Ups)
+set_property -dict {PACKAGE_PIN P17 IOSTANDARD LVCMOS33 PULLUP true} [get_ports {spi_sd_0_io0_io}] 
+set_property -dict {PACKAGE_PIN M16 IOSTANDARD LVCMOS33 PULLUP true} [get_ports {spi_sd_0_io1_io}] 
+set_property -dict {PACKAGE_PIN P18 IOSTANDARD LVCMOS33 PULLUP true} [get_ports {spi_sd_0_sck_io}] 
+set_property -dict {PACKAGE_PIN N18 IOSTANDARD LVCMOS33 PULLUP true} [get_ports {spi_sd_0_ss_io[0]}]
 
 ## PWM audio out signals
 #set_property -dict {PACKAGE_PIN B13 IOSTANDARD LVCMOS33} [get_ports {SPKL}]
