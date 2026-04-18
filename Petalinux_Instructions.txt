@@ -1,44 +1,92 @@
-============================================================================================================
-                                            SETUP
-============================================================================================================
+==============================================================================================================================================
+                                                                 SETUP (NO SD)
+==============================================================================================================================================
 1. Setup the Environment
-(Run this inside your PetaLinux installation folder [should be within Petalinux_SoftData] so your terminal understands the tools)
-source settings.sh
+Run "source settings.sh" inside your PetaLinux installation folder [likely within Petalinux_SoftData] so your terminal understands the tools
+
 
 2. Navigate to the Workspace
-cd ~/Petalinux_HardData
+Run "cd ~/Petalinux_HardData"
 
 3. Create the Base Project
-(This creates the initial wrapper specifically for our MicroBlaze processor)
-petalinux-create --type project --template microblaze --name image_filter_os
+Run "petalinux-create --type project --template microblaze --name image_filter_os"
 
 4. Import the Hardware Architecture
-(This points PetaLinux directly to the hardware we locked in on GitHub. When the blue configuration menu pops up, just hit <Save> and <Exit>)
+Run the following:
 cd image_filter_os
-petalinux-config --get-hw-description={PATH-TO-Hardware_Spec.xsa}
+petalinux-config --get-hw-description={path/to/hardware_spec.xsa}
 
 5. Disable U-Boot Networking
-Run the command petalinux-config -c u-boot. In the menu, navigate to "Networking → Networking Stack", 
-select "No networking support", then save and exit.
+Run "petalinux-config -c u-boot" and then go to "Networking" => "Networking Stack" and select "No networking support", then save and exit.
 
 6. Configure Root Filesystem
-Run the command petalinux-config -c rootfs
-Inside the rootfs menu, go into "Filesystem Packages --> devel --> python3 --> python3" 
-and activate python 3 by pressing 'Y', then save and exit.
+Run "petalinux-config -c rootfs" and then go to "Filesystem Packages" => "devel" => "python3" => "python3" => "python3" and activate by
+pressing 'Y', then save and exit
+
+7. Build the OS
+Run "petalinux-build"
+
+==============================================================================================================================================
+                                                                SETUP (WITH SD)
+==============================================================================================================================================
+1. Pre-Setup Instructions
+Follow steps 1-6 above
+
+2. Configuration Pt. 1
+Run "petalinux-config" then go to "Subsystem Hardware Settings" => "Flash Settings" => "Primary Flash (...) " and
+change it to "perifs_axi_perifs_axi_quad_spi_0". Once back in the main menu, also go to "Image Packaging Configuration" =>
+"Root filesystem type (...)" and select "EXT4 (SD/eMMC/SATA/USB)"
+
+3. Configuration Pt. 2
+Run "petalinux-config -c kernel" then go to "Device Drivers" => "MMC/SD/SDIO card Support" (Press 'Y' and then 'Enter') =>
+Press 'Y' for the following: "HW reset support for eMMC", "Simple HW reset support for MMC", "MMC block device driver",
+"SDIO UART/GPS class support", and "MMC/SD/SDIO over SPI" (Please make sure its a '*' and not an 'M')
+
+4. Configuration Pt. 3
+Run "nano project-spec/meta-user/recipes-bsp/device-tree/files/system-user.dtsi" and ensure that it contains the following:
+/include/ "system-conf.dtsi"
+/ {
+    aliases {
+        spi0 = &perifs_axi_perifs_axi_quad_spi_0;
+    };
+};
+
+&perifs_axi_perifs_axi_quad_spi_0 {
+    status = "okay";
+    num-cs = <1>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+
+    /* Kill the auto-generated ghost flash node */
+    /delete-node/ flash@0;
+
+    sdcard@0 {
+        compatible = "mmc-spi-slot";
+        reg = <0>;
+        spi-max-frequency = <400000>; /* Safe Mode for weak pull-ups */
+        voltage-ranges = <3300 3300>;
+
+        /* The 1-Bit Shift Fix (Clock Polarity/Phase) */
+        spi-cpol; 
+        spi-cpha; 
+
+        broken-cd;
+        disable-wp;
+        bus-width = <1>;
+    };
+};
 
 5. Build the OS
-petalinux-build
+Run "petalinux-build"
 
-============================================================================================================
-                                            TESTING
-============================================================================================================
-1. Connect to the board's serial port:
-Open a brand new Ubuntu terminal window (keep your Petalinux window open in the background).
-RUN: sudo minicom -D /dev/ttyUSB1 -b 115200
+==============================================================================================================================================
+                                                                TESTING (NO SD)
+==============================================================================================================================================
+1. Connect to the Board's Serial Port
+Open a brand new terminal window while keeping your Petalinux window open in the background and run "sudo minicom -D /dev/ttyUSB1 -b 115200"
 
 2. Push the OS (JTAG)
-Go back to your original terminal window, and run this exact command:
-petalinux-boot --jtag --fpga --kernel
+Go back to the original Petalinux terminal window and run "petalinux-boot --jtag --fpga --kernel"
 
 3. Log into PetaLinux
 Once the boot sequence finishes in your minicom window, log in:
@@ -46,11 +94,37 @@ Once the boot sequence finishes in your minicom window, log in:
 - Password: (It will immediately prompt you to create a new password. Type something simple like 'root')
 
 4. Create the DMA Test Script
-Create a new Python file directly on the board using the vi text editor:
-RUN: vi test_dma.py
-Now copy and paste (may have to use ctrl+ahift+v instead of just ctrl+v) the test_dma.py file from our repo to the new file you just made
-Press 'Esc' and then type ':wq', and press Enter to save and exit the text editor. (TRUST ME)
+Create a new Python file directly on the board using the vi text editor by running "vi test.py". Then, copy and paste
+(may have to use ctrl + shift + v instead of just ctrl + v) the test_dma.py file from our repo to the new file you just made.
+Finally, press 'Esc', type ":wq", and press 'Enter' to save and exit the text editor (TRUST ME)
 
 5. Run the Test
-RUN: sudo python3 test_dma.py
-If all goes well, you should get the inverse of the Color code in the test_dma.py file
+Run "sudo python3 test.py". If all goes well, all the tests should pass
+
+==============================================================================================================================================
+                                                                USAGE (WITH SD)
+==============================================================================================================================================
+1. Set up SD Card
+Ensure that the SD Card has, at the minimum, the compiled "image_filter" binary executable and the images you want to apply the filters on
+placed into rootfs/home/petalinux/
+
+2. Connect to the Board's Serial Port
+Open a brand new terminal window while keeping your Petalinux window open in the background and run "sudo minicom -D /dev/ttyUSB1 -b 115200"
+
+3. Push the OS (JTAG)
+Go back to the original Petalinux terminal window and run "petalinux-boot --jtag --fpga --kernel"
+
+4. Enter the Boot Process
+When you see "Hit any key to stop autoboot", press 'Enter' immediately to drop into the U-Boot menu. You will only need to press it once
+
+5. Mount the SD Card and Boot
+Run 'setenv bootargs "console=ttyUL0,115200 earlycon earlyprintk root=/dev/mmcblk0p2 rw rootwait"' and then "bootm 0x80000000 - 0x81e00000".
+Make sure the USB_C port is plugged in for the EXTPWR
+
+6. Log into PetaLinux
+Once the boot sequence finishes in your minicom window, log in:
+- Username: petalinux
+- Password: (It will immediately prompt you to create a new password. Type something simple like 'root')
+
+7. Run the Test
+Run "./image_filter [input.png] [filter_mode] [output.png]". If all goes well, the output image should be placed in the specified filepath
