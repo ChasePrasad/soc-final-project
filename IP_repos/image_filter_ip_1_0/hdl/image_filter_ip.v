@@ -127,9 +127,9 @@
     //   Max value: (77+150+29)*255 = 256*255 = 65280  -> fits in 16 bits
     //   After >>8: max = 255                           -> fits in 8 bits
     // -----------------------------------------------------------------------
-    wire [15:0] y_wide = (8'd77  * r_in)
-                       + (8'd150 * g_in)
-                       + (8'd29  * b_in);
+    wire [15:0] y_wide = ({8'b0, 8'd77} * {8'b0, r_in})
+                       + ({8'b0, 8'd150} * {8'b0, g_in})
+                       + ({8'b0, 8'd29}  * {8'b0, b_in});
     wire [7:0]  y_out  = y_wide[15:8];   // equivalent to >> 8
 
     // -----------------------------------------------------------------------
@@ -142,10 +142,10 @@
 
     always @(*) begin
         case (filter_mode[1:0])
-            2'd0:    filtered_tdata = pixel_in_tdata;                              // passthrough
-            2'd1:    filtered_tdata = {pixel_in_tdata[31:24], ~r_in, ~g_in, ~b_in}; // invert
+            2'd0:    filtered_tdata = {pixel_in_tdata[31:24], r_in, g_in, b_in};       // passthrough
+            2'd1:    filtered_tdata = {pixel_in_tdata[31:24], ~r_in, ~g_in, ~b_in};    // invert
             2'd2:    filtered_tdata = {pixel_in_tdata[31:24],  y_out,  y_out,  y_out}; // grayscale
-            default: filtered_tdata = pixel_in_tdata;
+            default: filtered_tdata = {pixel_in_tdata[31:24], r_in, g_in, b_in};       // default to passthrough on invalid mode
         endcase
     end
 

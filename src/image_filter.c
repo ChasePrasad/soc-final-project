@@ -62,9 +62,9 @@
 
 /* Physical DDR3 addresses used as DMA pixel buffers.
  * Max supported image: 1920×1080 = 8,294,400 bytes */
-#define SRC_BUF_PHYS      0x81000000
-#define DST_BUF_PHYS      0x82000000
-#define MAX_BUF_BYTES     (1920 * 1080 * 4) // 4 bytes per pixel
+#define SRC_BUF_PHYS      0x84000000
+#define DST_BUF_PHYS      0x86000000
+#define MAX_BUF_BYTES     (DST_BUF_PHYS - SRC_BUF_PHYS) // Max 2896 * 2896 image at 4 bytes/pixel
 
 // Register access macros
 #define REG_WR(base, off, val)  (*((volatile uint32_t *)((base) + (off))) = (val))
@@ -102,7 +102,7 @@ static void dma_reset(void *dma)
     while (timeout-- > 0) {
         uint32_t s_mm2s = REG_RD(dma, MM2S_STAT);
         uint32_t s_s2mm = REG_RD(dma, S2MM_STAT);
-        if (!(s_mm2s & DMA_STAT_HALTED) && !(s_s2mm & DMA_STAT_HALTED))
+        if (!(s_mm2s & DMA_CTRL_RESET) && !(s_s2mm & DMA_CTRL_RESET))
             break;
         sleep_ms(10);
     }
