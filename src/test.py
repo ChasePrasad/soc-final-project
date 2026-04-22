@@ -74,3 +74,22 @@ run_filter_test("Grayscale (white)", MODE_GRAYSCALE, "0x00FFFFFF")
 # Test 4: Passthrough — value should be unchanged
 # -----------------------------------------------------------------------
 run_filter_test("Passthrough", MODE_PASSTHROUGH, "0x00AABBCC")
+
+# -----------------------------------------------------------------------
+# Test 5: Neon Duotone — pure red (0x00FF0000)
+#   Y = 76, rb_diff = 255, glow = 63, t = 139
+#   R_out = 20 + (235 * 139 >> 8) = 147 (0x93)
+#   G_out = 35 + (35 * 139 >> 8) = 54 (0x36)
+#   B_out = 120 + (100 * 139 >> 8) = 174 (0xAE)
+#   Expected result: 0x009336AE
+# -----------------------------------------------------------------------
+run_filter_test("Neon Duotone", MODE_NEON, "0x00FF0000")
+
+# -----------------------------------------------------------------------
+# Test 6: Sunset — pure blue (0x000000FF)
+#   R_out = clamp(0 + 50) = 50 (0x32)
+#   G_out = 0 (0x00)
+#   B_out = 255 >> 1 = 127 (0x7F)
+#   Expected result: 0x0032007F
+# -----------------------------------------------------------------------
+run_filter_test("Sunset", MODE_SUNSET, "0x000000FF")

@@ -189,6 +189,47 @@
 
     assign pixel_out_tdata = filtered_tdata;
 
+    // -----------------------------------------------------------------------
+    // NEW: Sunset Filter Logic (Mode 4)
+    // -----------------------------------------------------------------------
+    wire [8:0] sunset_r_tmp = {1'b0, r_in} + 9'd50; // Boost Red
+    wire [7:0] sunset_r = (sunset_r_tmp > 9'd255) ? 8'd255 : sunset_r_tmp[7:0];
+    
+    wire [7:0] sunset_g = g_in; // Keep Green the same
+    
+    wire [7:0] sunset_b = b_in >> 1; // Cut Blue in half for that "golden hour" look
+
+    // -----------------------------------------------------------------------
+    // Filter mux — selected by filter_mode[2:0] written via AXI-Lite
+    //   0 : Passthrough
+    //   1 : Invert
+    //   2 : Grayscale
+    //   3 : Neon Duotone
+    //   4 : Sunset (Hardware) - NEW!
+    // -----------------------------------------------------------------------
+    reg [31:0] filtered_tdata;
+
+    always @(*) begin
+        // Change from [1:0] to [2:0] to support Mode 4
+        case (filter_mode[2:0])
+            3'd0:    filtered_tdata = {pixel_in_tdata[31:24], r_in, g_in, b_in};       
+            3'd1:    filtered_tdata = {pixel_in_tdata[31:24], ~r_in, ~g_in, ~b_in};    
+            3'd2:    filtered_tdata = {pixel_in_tdata[31:24],  y_out,  y_out,  y_out}; 
+            3'd3:    filtered_tdata = {pixel_in_tdata[31:24], neon_r, neon_g, neon_b};  
+            
+            // --- NEW MODE 4 ---
+            3'd4:    filtered_tdata = {pixel_in_tdata[31:24], sunset_r, sunset_g, sunset_b};
+            
+            default: filtered_tdata = {pixel_in_tdata[31:24], r_in, g_in, b_in};       
+        endcase
+    end
+
+    assign pixel_out_tdata = filtered_tdata;
+
+    // User logic ends
+
+endmodule
+
     // User logic ends
 
 endmodule
