@@ -133,10 +133,47 @@
     wire [7:0]  y_out  = y_wide[15:8];   // equivalent to >> 8
 
     // -----------------------------------------------------------------------
+    // Neon duotone approximation
+    //
+    // Hardware-friendly version of the software effect:
+    //   t = clamp( grayscale + |R-B|/4 )
+    //   output = shadow + (highlight-shadow) * t / 256
+    //
+    // Shadow    = (20, 35, 120)
+    // Highlight = (255, 70, 220)
+    // -----------------------------------------------------------------------
+    wire [8:0] rb_diff = (r_in >= b_in) ? ({1'b0, r_in} - {1'b0, b_in})
+                                        : ({1'b0, b_in} - {1'b0, r_in});
+
+    wire [8:0] glow_tmp = rb_diff >> 2;
+    wire [8:0] t_tmp    = {1'b0, y_out} + glow_tmp;
+    wire [7:0] t_out    = (t_tmp > 9'd255) ? 8'd255 : t_tmp[7:0];
+
+    localparam [7:0] SHADOW_R    = 8'd20;
+    localparam [7:0] SHADOW_G    = 8'd35;
+    localparam [7:0] SHADOW_B    = 8'd120;
+    localparam [7:0] HIGHLIGHT_R = 8'd255;
+    localparam [7:0] HIGHLIGHT_G = 8'd70;
+    localparam [7:0] HIGHLIGHT_B = 8'd220;
+
+    localparam [8:0] DELTA_R = 9'd235;
+    localparam [8:0] DELTA_G = 9'd35;
+    localparam [8:0] DELTA_B = 9'd100;
+
+    wire [16:0] neon_r_mul = DELTA_R * t_out;
+    wire [16:0] neon_g_mul = DELTA_G * t_out;
+    wire [16:0] neon_b_mul = DELTA_B * t_out;
+
+    wire [7:0] neon_r = SHADOW_R + neon_r_mul[15:8];
+    wire [7:0] neon_g = SHADOW_G + neon_g_mul[15:8];
+    wire [7:0] neon_b = SHADOW_B + neon_b_mul[15:8];
+
+    // -----------------------------------------------------------------------
     // Filter mux — selected by filter_mode[1:0] written via AXI-Lite
     //   0 : Passthrough  (no change)
     //   1 : Invert       (bitwise NOT on RGB channels)
     //   2 : Grayscale    (luminance rec. 601 approximation, R=G=B=Y)
+    //   3 : Neon Duotone (hardware-friendly duotone approximation)
     // -----------------------------------------------------------------------
     reg [31:0] filtered_tdata;
 
@@ -145,6 +182,7 @@
             2'd0:    filtered_tdata = {pixel_in_tdata[31:24], r_in, g_in, b_in};       // passthrough
             2'd1:    filtered_tdata = {pixel_in_tdata[31:24], ~r_in, ~g_in, ~b_in};    // invert
             2'd2:    filtered_tdata = {pixel_in_tdata[31:24],  y_out,  y_out,  y_out}; // grayscale
+            2'd3:    filtered_tdata = {pixel_in_tdata[31:24], neon_r, neon_g, neon_b};  // neon duotone
             default: filtered_tdata = {pixel_in_tdata[31:24], r_in, g_in, b_in};       // default to passthrough on invalid mode
         endcase
     end
