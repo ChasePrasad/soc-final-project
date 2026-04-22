@@ -226,9 +226,6 @@
 
     assign pixel_out_tdata = filtered_tdata;
 
-    // User logic ends
-
-endmodule
 
     // User logic ends
 

@@ -84,7 +84,6 @@ run_filter_test("Passthrough", MODE_PASSTHROUGH, "0x00AABBCC")
 #   Expected result: 0x009336AE
 # -----------------------------------------------------------------------
 run_filter_test("Neon Duotone", MODE_NEON, "0x00FF0000")
-
 # -----------------------------------------------------------------------
 # Test 6: Sunset — pure blue (0x000000FF)
 #   R_out = clamp(0 + 50) = 50 (0x32)
