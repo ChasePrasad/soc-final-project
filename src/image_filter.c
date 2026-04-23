@@ -12,6 +12,7 @@
  *   0 — Passthrough
  *   1 — Invert
  *   2 — Grayscale
+ *   3 — Neon Duotone
  *
  * Build:
  *   gcc -O2 -o image_filter image_filter.c -lm
@@ -157,7 +158,8 @@ int main(int argc, char *argv[])
             "  filter_mode:\n"
             "    0 — Passthrough\n"
             "    1 — Invert\n"
-            "    2 — Grayscale\n",
+            "    2 — Grayscale\n"
+            "    3 — Neon Duotone\n",
             argv[0]);
         return 1;
     }
@@ -166,8 +168,8 @@ int main(int argc, char *argv[])
     int         filter_mode = atoi(argv[2]);
     const char *output_path = argv[3];
 
-    if (filter_mode < 0 || filter_mode > 2) {
-        fprintf(stderr, "Error: filter_mode must be 0, 1, or 2\n");
+    if (filter_mode < 0 || filter_mode > 3) {
+        fprintf(stderr, "Error: filter_mode must be 0, 1, 2, or 3\n");
         return 1;
     }
 

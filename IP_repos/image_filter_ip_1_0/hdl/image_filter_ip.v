@@ -135,15 +135,15 @@
     // -----------------------------------------------------------------------
     // Neon Duotone (Mode 3)
     //
-    // Hardware-friendly approximation:
+    // Hardware-friendly version of the software effect:
     //   t = clamp( grayscale + |R-B|/4 )
     //   output = shadow + (highlight-shadow) * t / 256
     //
-    // Shadow    = (20,  35,  120)
-    // Highlight = (255, 70,  220)
+    // Shadow    = (20, 35, 120)
+    // Highlight = (255, 70, 220)
     // -----------------------------------------------------------------------
-    wire [8:0] rb_diff  = (r_in >= b_in) ? ({1'b0, r_in} - {1'b0, b_in})
-                                          : ({1'b0, b_in} - {1'b0, r_in});
+    wire [8:0] rb_diff = (r_in >= b_in) ? ({1'b0, r_in} - {1'b0, b_in})
+                                        : ({1'b0, b_in} - {1'b0, r_in});
 
     wire [8:0] glow_tmp = rb_diff >> 2;
     wire [8:0] t_tmp    = {1'b0, y_out} + glow_tmp;
@@ -200,13 +200,13 @@
 
     always @(*) begin
         case (filter_mode[2:0])
-            3'd0:    filtered_tdata = {pixel_in_tdata[31:24], r_in,     g_in,     b_in};         // passthrough
-            3'd1:    filtered_tdata = {pixel_in_tdata[31:24], ~r_in,    ~g_in,    ~b_in};        // invert
-            3'd2:    filtered_tdata = {pixel_in_tdata[31:24], y_out,    y_out,    y_out};        // grayscale
-            3'd3:    filtered_tdata = {pixel_in_tdata[31:24], neon_r,   neon_g,   neon_b};      // neon duotone
-            3'd4:    filtered_tdata = {pixel_in_tdata[31:24], sunset_r, sunset_g, sunset_b};    // sunset
-            3'd5:    filtered_tdata = {pixel_in_tdata[31:24], red_r,    red_g,    red_b};        // red filter
-            default: filtered_tdata = {pixel_in_tdata[31:24], r_in,     g_in,     b_in};         // default passthrough
+            3'd0:    filtered_tdata = {pixel_in_tdata[31:24], r_in,     g_in,     b_in};        // passthrough
+            3'd1:    filtered_tdata = {pixel_in_tdata[31:24], ~r_in,    ~g_in,    ~b_in};       // invert
+            3'd2:    filtered_tdata = {pixel_in_tdata[31:24], y_out,    y_out,    y_out};       // grayscale
+            3'd3:    filtered_tdata = {pixel_in_tdata[31:24], neon_r,   neon_g,   neon_b};     // neon duotone
+            3'd4:    filtered_tdata = {pixel_in_tdata[31:24], sunset_r, sunset_g, sunset_b};   // sunset
+            3'd5:    filtered_tdata = {pixel_in_tdata[31:24], red_r,    red_g,    red_b};       // red filter
+            default: filtered_tdata = {pixel_in_tdata[31:24], r_in,     g_in,     b_in};        // default passthrough
         endcase
     end
 
