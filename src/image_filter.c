@@ -13,6 +13,8 @@
  *   1 — Invert
  *   2 — Grayscale
  *   3 — Neon Duotone
+ *   4 — Sunset
+ *   5 — Red
  *
  * Build:
  *   gcc -O2 -o image_filter image_filter.c -lm
@@ -61,11 +63,10 @@
 #define DMA_STAT_IDLE     (1 << 1) // Channel is idle (transfer complete)
 #define DMA_STAT_HALTED   (1 << 0) // Channel is halted (error or reset)
 
-/* Physical DDR3 addresses used as DMA pixel buffers.
- * Max supported image: 1920×1080 = 8,294,400 bytes */
+// Max 2896 * 2896 image at 4 bytes/pixel
 #define SRC_BUF_PHYS      0x84000000
 #define DST_BUF_PHYS      0x86000000
-#define MAX_BUF_BYTES     (DST_BUF_PHYS - SRC_BUF_PHYS) // Max 2896 * 2896 image at 4 bytes/pixel
+#define MAX_BUF_BYTES     (DST_BUF_PHYS - SRC_BUF_PHYS)
 
 // Register access macros
 #define REG_WR(base, off, val)  (*((volatile uint32_t *)((base) + (off))) = (val))
@@ -159,7 +160,9 @@ int main(int argc, char *argv[])
             "    0 — Passthrough\n"
             "    1 — Invert\n"
             "    2 — Grayscale\n"
-            "    3 — Neon Duotone\n",
+            "    3 — Neon Duotone\n"
+            "    4 — Sunset\n"
+            "    5 — Red\n",
             argv[0]);
         return 1;
     }
@@ -168,8 +171,8 @@ int main(int argc, char *argv[])
     int         filter_mode = atoi(argv[2]);
     const char *output_path = argv[3];
 
-    if (filter_mode < 0 || filter_mode > 3) {
-        fprintf(stderr, "Error: filter_mode must be 0, 1, 2, or 3\n");
+    if (filter_mode < 0 || filter_mode > 5) {
+        fprintf(stderr, "Error: filter_mode must be 0, 1, 2, 3, 4, or 5\n");
         return 1;
     }
 

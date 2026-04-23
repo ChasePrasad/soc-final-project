@@ -4,7 +4,6 @@
 1. Setup the Environment
 Run "source settings.sh" inside your PetaLinux installation folder [likely within Petalinux_SoftData] so your terminal understands the tools
 
-
 2. Navigate to the Workspace
 Run "cd ~/Petalinux_HardData"
 
@@ -118,20 +117,20 @@ Run "source [your long filepath]" and then "$CC -O2 -o image_filter image_filter
 8. Mount the SD Card's BOOT Partition
 Once you have the SD card connected to your laptop, run "lsblk" and note the name of the SD card and its partitions
 (usually "sda" if using a USB adapter or "mmcblk0" if reading directly). Run "sudo mkdir /mnt/sdcard" and then
-"sudo mount /dev/[SD card BOOT PARTITION name (the smaller and usually first one)]"
+"sudo mount /dev/[SD card BOOT PARTITION name (the smaller and usually first one)] /mnt/sdcard"
 
 9. Update the BOOT Partition
 Run "sudo cp images/linux/boot.scr /mnt/sdcard" and "sudo cp images/linux/image.ub /mnt/sdcard". Then run "sync" and "sudo umount /mnt/sdcard"
 
 10. Mount the SD Card's rootfs Partition
-Run "sudo mount /dev/[SD card rootfs PARTITION name (the larger and usually second one from step 8)]"
+Run "sudo mount /dev/[SD card rootfs PARTITION name (the larger and usually second one from step 8)] /mnt/sdcard"
 
 11. Update the rootfs Partition
 Run "sudo rm -fr /mnt/sdcard/*" and "sudo tar -xzf images/linux/rootfs.tar.gz -C /mnt/sdcard"
 
 12. Set up SD Card for Use
 Ensure that the SD Card has, at the minimum, the compiled "image_filter" executable from step 7 and the images you want to use the filters on
-placed into "/mnt/sdcard/home/petalinux/". Then run "sync" and "sudo umount /mnt/sdcard" and placed the SD card into the board's SD card slot
+placed into "/mnt/sdcard/home/petalinux/". Then run "sync" and "sudo umount /mnt/sdcard" and place the SD card into the board's SD card slot
 
 ==============================================================================================================================================
                                                                 USAGE (WITH SD)

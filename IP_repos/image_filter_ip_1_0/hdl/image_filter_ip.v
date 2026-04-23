@@ -180,12 +180,15 @@
     wire [7:0] sunset_b     = b_in >> 1;
 
     // -----------------------------------------------------------------------
-    // Red Filter (Mode 5)
-    //   Keeps only the Red channel; G and B are zeroed out
+    // Red Tint (Mode 5)
+    //   R = clamped to 255
+    //   G = G >> 1  (halved)
+    //   B = B >> 1  (halved)
     // -----------------------------------------------------------------------
-    wire [7:0] red_r = r_in;
-    wire [7:0] red_g = 8'd0;
-    wire [7:0] red_b = 8'd0;
+    wire [8:0] red_r_tmp = {1'b0, r_in} + 9'd50;
+    wire [7:0] red_r     = (red_r_tmp > 9'd255) ? 8'd255 : red_r_tmp[7:0];
+    wire [7:0] red_g     = g_in >> 1;
+    wire [7:0] red_b     = b_in >> 1;
 
     // -----------------------------------------------------------------------
     // Filter mux — selected by filter_mode[2:0] written via AXI-Lite
@@ -203,8 +206,8 @@
             3'd0:    filtered_tdata = {pixel_in_tdata[31:24], r_in,     g_in,     b_in};        // passthrough
             3'd1:    filtered_tdata = {pixel_in_tdata[31:24], ~r_in,    ~g_in,    ~b_in};       // invert
             3'd2:    filtered_tdata = {pixel_in_tdata[31:24], y_out,    y_out,    y_out};       // grayscale
-            3'd3:    filtered_tdata = {pixel_in_tdata[31:24], neon_r,   neon_g,   neon_b};     // neon duotone
-            3'd4:    filtered_tdata = {pixel_in_tdata[31:24], sunset_r, sunset_g, sunset_b};   // sunset
+            3'd3:    filtered_tdata = {pixel_in_tdata[31:24], neon_r,   neon_g,   neon_b};      // neon duotone
+            3'd4:    filtered_tdata = {pixel_in_tdata[31:24], sunset_r, sunset_g, sunset_b};    // sunset
             3'd5:    filtered_tdata = {pixel_in_tdata[31:24], red_r,    red_g,    red_b};       // red filter
             default: filtered_tdata = {pixel_in_tdata[31:24], r_in,     g_in,     b_in};        // default passthrough
         endcase
